@@ -573,4 +573,14 @@ depth_limit_test() ->
     ?assertEqual("{\"a\",[\"b\",[\"c\",[\"d\"]]]}", lists:flatten(format("~P", [{"a", ["b", ["c", ["d"]]]}, 9], 50))),
     ok.
 
+print_terms_without_format_string_test() ->
+    ?assertEqual("{hello,world}", lists:flatten(format({hello, world}, [], 50))),
+    ?assertEqual("[{google,bomb}]", lists:flatten(format([{google, bomb}], [], 50))),
+    ?assertEqual("hello", lists:flatten(format(<<"hello">>, [], 50))),
+    ?assertEqual("hello", lists:flatten(format('hello', [], 50))),
+    ?assertEqual("<<1,2,3,1:7>>", lists:flatten(format(
+                <<1, 2, 3, 1:7>>, [], 100))),
+    ?assertEqual("65535", lists:flatten(format(65535, [], 50))),
+    ok.
+
 -endif.

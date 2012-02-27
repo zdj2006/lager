@@ -29,18 +29,35 @@
 format(FmtStr, Args, MaxLen) ->
     format(FmtStr, Args, MaxLen, []).
 
-format(FmtStr, Args, MaxLen, Opts) ->
-    Options = make_options(Opts, #options{}),
-    Cs = collect(FmtStr, Args),
-    {Cs2, MaxLen2} = build(Cs, [], MaxLen, Options),
-    %% count how many terms remain
-    {Count, StrLen} = lists:foldl(
-        fun({_C, _As, _F, _Adj, _P, _Pad, _Enc}, {Terms, Chars}) ->
-                {Terms + 1, Chars};
-            (_, {Terms, Chars}) ->
-                {Terms, Chars + 1}
-        end, {0, 0}, Cs2),
-    build2(Cs2, Count, MaxLen2 - StrLen).
+format(FmtStr, Args, MaxLen, Opts) when is_atom(FmtStr) ->
+    format(erlang:atom_to_list(FmtStr), Args, MaxLen, Opts);
+format(FmtStr, Args, MaxLen, Opts) when is_binary(FmtStr) ->
+    format(erlang:binary_to_list(FmtStr), Args, MaxLen, Opts);
+format(FmtStr, [], MaxLen, Opts) when not is_list(FmtStr) ->
+    %% lager 0.9 behaviour let you print arbitrary terms without a format string.
+    %% This is emulation for that behaviour.
+    format("~p", [FmtStr], MaxLen, Opts);
+format(FmtStr, Args, MaxLen, Opts) when is_list(FmtStr) ->
+    case lager_stdlib:string_p(FmtStr) of
+        true ->
+            Options = make_options(Opts, #options{}),
+            Cs = collect(FmtStr, Args),
+            {Cs2, MaxLen2} = build(Cs, [], MaxLen, Options),
+            %% count how many terms remain
+            {Count, StrLen} = lists:foldl(
+                fun({_C, _As, _F, _Adj, _P, _Pad, _Enc}, {Terms, Chars}) ->
+                        {Terms + 1, Chars};
+                    (_, {Terms, Chars}) ->
+                        {Terms, Chars + 1}
+                end, {0, 0}, Cs2),
+            build2(Cs2, Count, MaxLen2 - StrLen);
+        false when Args == [] ->
+            format("~p", [FmtStr], MaxLen, Opts);
+        _ ->
+            erlang:error(badarg)
+    end;
+format(_, _, _, _) ->
+    erlang:error(badarg).
 
 collect([$~|Fmt0], Args0) ->
     {C,Fmt1,Args1} = collect_cseq(Fmt0, Args0),
