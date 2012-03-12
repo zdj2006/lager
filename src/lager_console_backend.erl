@@ -33,24 +33,21 @@
 
 -include("lager.hrl").
 
--define(VERBOSE_FORMAT,[date, " ", time, " [", severity, "] ", pid, "@", module,":", function, ":",line," ", message, "\n"]).
 -define(TERSE_FORMAT,[time, " [", severity,"] ", message, "\n"]).
 
 %% @private
 init(Level) when is_atom(Level) ->
-	init([Level,{lager_default_formatter,?TERSE_FORMAT}]);
+    init([Level,{lager_default_formatter,?TERSE_FORMAT}]);
 init([Level, true]) -> % for backwards compatibility
-	init([Level,{lager_default_formatter,?VERBOSE_FORMAT}]);
+    init([Level,{lager_default_formatter,[]}]);
 init([Level,false]) -> % for backwards compatibility
-	init([Level,{lager_default_formatter,?TERSE_FORMAT}]);
-init([Level,{Formatter,[]}]) ->
-	init([Level,{Formatter,[]}]);
+    init([Level,{lager_default_formatter,?TERSE_FORMAT}]);
 init([Level,{Formatter,FormatterConfig}])  when is_atom(Level), is_atom(Formatter)->
-	case lists:member(Level, ?LEVELS) of
+    case lists:member(Level, ?LEVELS) of
         true ->
             {ok, #state{level=lager_util:level_to_num(Level), 
-						formatter=Formatter, 
-						format_config=FormatterConfig}};
+                    formatter=Formatter, 
+                    format_config=FormatterConfig}};
         _ ->
             {error, bad_log_level}
     end.
@@ -134,7 +131,7 @@ console_log_test_() ->
                         Pid = spawn(F(self())),
                         gen_event:add_handler(lager_event, lager_console_backend, info),
                         erlang:group_leader(Pid, whereis(lager_event)),
-	                    lager_mochiglobal:put(loglevel, {?INFO, []}),
+                        lager_mochiglobal:put(loglevel, {?INFO, []}),
                         lager:log(info, self(), "Test message"),
                         receive
                             {io_request, From, ReplyAs, {put_chars, unicode, Msg}} ->
@@ -151,7 +148,7 @@ console_log_test_() ->
                         Pid = spawn(F(self())),
                         erlang:group_leader(Pid, whereis(lager_event)),
                         gen_event:add_handler(lager_event, lager_console_backend, [info, true]),
-	                    lager_mochiglobal:put(loglevel, {?INFO, []}),
+                        lager_mochiglobal:put(loglevel, {?INFO, []}),
                         lager:info("Test message"),
                         lager:info("Test message"),
                         PidStr = pid_to_list(self()),
