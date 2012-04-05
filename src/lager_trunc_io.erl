@@ -141,7 +141,7 @@ print(Binary, Max, Options) when is_binary(Binary) ->
     {L, Len} = case Options#print_options.lists_as_strings orelse
         Options#print_options.force_strings of
         true ->
-            alist_start(B, Max-4, Options);
+            alist_start(B, Max, Options);
         _ ->
             list_body(B, Max-4, Options, false)
     end,
@@ -460,8 +460,11 @@ quote_strip_test() ->
 
 binary_printing_test() ->
     ?assertEqual("<<>>", lists:flatten(format("~p", [<<>>], 50))),
+    ?assertEqual("", lists:flatten(format("~s", [<<>>], 50))),
+    ?assertEqual(" ", lists:flatten(format("~s", [<<" ">>], 50))),
     ?assertEqual("<<..>>", lists:flatten(format("~p", [<<"hi">>], 0))),
     ?assertEqual("<<...>>", lists:flatten(format("~p", [<<"hi">>], 1))),
+    ?assertEqual("hello w...", lists:flatten(format("~s", [<<"hello world">>], 10))),
     ?assertEqual("<<\"hello\">>", lists:flatten(format("~p", [<<$h, $e, $l, $l, $o>>], 50))),
     ?assertEqual("<<\"hello\">>", lists:flatten(format("~p", [<<"hello">>], 50))),
     ?assertEqual("<<104,101,108,108,111>>", lists:flatten(format("~w", [<<"hello">>], 50))),
@@ -471,6 +474,10 @@ binary_printing_test() ->
     ?assertEqual("hello\nworld", lists:flatten(format("~s", [<<"hello\nworld">>], 50))),
     ?assertEqual("<<\"hello\\nworld\">>", lists:flatten(format("~p", [<<"hello\nworld">>], 50))),
     ?assertEqual("     hello", lists:flatten(format("~10s", [<<"hello">>], 50))),
+    ok.
+
+iolist_printing_test() ->
+    ?assertEqual("this is an iolist", lists:flatten(format("~s", [["this", 32, $i, $s, 32, [$a, $n], 32, <<"iolist">>]], 50))),
     ok.
 
 bitstring_printing_test() ->

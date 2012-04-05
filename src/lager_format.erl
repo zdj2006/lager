@@ -243,8 +243,12 @@ control2($s, [L0], F, Adj, P, Pad, unicode, L) ->
     Res = uniconv(string(List, F, Adj, P, Pad)),
     {Res, lists:flatlength(Res)}.
 
+maybe_flatten(<<>>) ->
+    [];
+maybe_flatten([]) ->
+    [];
 maybe_flatten(X) when is_list(X) ->
-    lists:flatten(X);
+    erlang:iolist_to_binary(X);
 maybe_flatten(X) ->
     X.
 
