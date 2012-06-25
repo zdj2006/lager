@@ -55,35 +55,35 @@ start_ok(App, {error, Reason}) ->
 
 -spec dispatch_log(log_level(), list(), string(), list() | none) ->  ok | {error, lager_not_running}.
 dispatch_log(Severity, Metadata, Format, Args) when is_atom(Severity)->
-	case whereis(lager_event) of
-		undefined ->
-			%% lager isn't running
-			{error, lager_not_running};
-		Pid ->
-			
-			{LevelThreshold,TraceFilters} = lager_mochiglobal:get(loglevel,{?LOG_NONE,[]}),
-			SeverityAsInt=lager_util:level_to_num(Severity),
-			Destinations = case TraceFilters of 
-							   [] -> [];
-							   _ -> 
-								   lager_util:check_traces(Metadata,SeverityAsInt,TraceFilters,[])
-						   end,
-			case (LevelThreshold >= SeverityAsInt orelse Destinations =/= []) of
-				true -> 
-					Timestamp = lager_util:format_time(),
-					Msg=case Args of 
-							A when is_list(A) ->safe_format_chop(Format,Args,4096);
-							_ -> Format
-						end,
-					gen_event:sync_notify(Pid, #lager_log_message{destinations=Destinations, 
-																  metadata=Metadata, 
-																  severity_as_int=SeverityAsInt, 
-																  timestamp=Timestamp, 
-																  message=Msg});
-				_ -> 
-					ok
-			end
-	end.
+    case whereis(lager_event) of
+        undefined ->
+            %% lager isn't running
+            {error, lager_not_running};
+        Pid ->
+
+            {LevelThreshold,TraceFilters} = lager_mochiglobal:get(loglevel,{?LOG_NONE,[]}),
+            SeverityAsInt=lager_util:level_to_num(Severity),
+            Destinations = case TraceFilters of 
+                [] -> [];
+                _ -> 
+                    lager_util:check_traces(Metadata,SeverityAsInt,TraceFilters,[])
+            end,
+            case (LevelThreshold >= SeverityAsInt orelse Destinations =/= []) of
+                true -> 
+                    Timestamp = lager_util:format_time(),
+                    Msg=case Args of 
+                        A when is_list(A) ->safe_format_chop(Format,Args,4096);
+                        _ -> Format
+                    end,
+                    gen_event:sync_notify(Pid, #lager_log_message{destinations=Destinations, 
+                            metadata=Metadata, 
+                            severity_as_int=SeverityAsInt, 
+                            timestamp=Timestamp, 
+                            message=Msg});
+                _ -> 
+                    ok
+            end
+    end.
 
 %% @doc Manually log a message into lager without using the parse transform.
 -spec log(log_level(), pid(), list()) -> ok | {error, lager_not_running}.

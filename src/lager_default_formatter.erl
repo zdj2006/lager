@@ -89,49 +89,49 @@ get_metadata(Key, Metadata, Default) ->
 
 -ifdef(TEST).
 basic_test_() ->
-	[{"Default formatting test",
-	  	?_assertEqual(iolist_to_binary([<<"Day Time [error] ">>, pid_to_list(self()), <<" Message\n">>]),
-				      iolist_to_binary(format(#lager_log_message{timestamp={"Day","Time"},
-															  message="Message",
-															  severity_as_int=lager_util:level_to_num(error),
-															  metadata=[{pid,self()}]},
-									   [])))
-	  },
-	 {"Basic Formatting",
-		  ?_assertEqual(<<"Simplist Format">>,
-						iolist_to_binary(format(#lager_log_message{timestamp={"Day","Time"},
-															   message="Message",
-															   severity_as_int=lager_util:level_to_num(error),
-															   metadata=[{pid,self()}]},
-											["Simplist Format"])))
-	 },
-	 {"Default equivalent formatting test",
-	  	?_assertEqual(iolist_to_binary([<<"Day Time [error] ">>, pid_to_list(self()), <<" Message\n">>]),
-				      iolist_to_binary(format(#lager_log_message{timestamp={"Day","Time"},
-															  message="Message",
-															  severity_as_int=lager_util:level_to_num(error),
-															  metadata=[{pid,self()}]},
-									   	[date, " ", time," [",severity,"] ",pid, " ", message, "\n"]
-					)))
-	  },
-	  {"Non existant metadata can default to string",
-	  	?_assertEqual(iolist_to_binary([<<"Day Time [error] Fallback Message\n">>]),
-				      iolist_to_binary(format(#lager_log_message{timestamp={"Day","Time"},
-															  message="Message",
-															  severity_as_int=lager_util:level_to_num(error),
-															  metadata=[]},
-									   	[date, " ", time," [",severity,"] ",{does_not_exist,"Fallback"}, " ", message, "\n"]
-					)))
-	  },
-	  {"Non existant metadata can default to other metadata",
-	  	?_assertEqual(iolist_to_binary([<<"Day Time [error] Fallback Message\n">>]),
-				      iolist_to_binary(format(#lager_log_message{timestamp={"Day","Time"},
-															  message="Message",
-															  severity_as_int=lager_util:level_to_num(error),
-															  metadata=[{pid,"Fallback"}]},
-									   	[date, " ", time," [",severity,"] ",{does_not_exist,pid}, " ", message, "\n"]
-					)))
-	  }	 
-	 ].
+    [{"Default formatting test",
+            ?_assertEqual(iolist_to_binary([<<"Day Time [error] ">>, pid_to_list(self()), <<" Message\n">>]),
+                iolist_to_binary(format(#lager_log_message{timestamp={"Day","Time"},
+                            message="Message",
+                            severity_as_int=lager_util:level_to_num(error),
+                            metadata=[{pid,self()}]},
+                        [])))
+        },
+        {"Basic Formatting",
+            ?_assertEqual(<<"Simplist Format">>,
+                iolist_to_binary(format(#lager_log_message{timestamp={"Day","Time"},
+                            message="Message",
+                            severity_as_int=lager_util:level_to_num(error),
+                            metadata=[{pid,self()}]},
+                        ["Simplist Format"])))
+        },
+        {"Default equivalent formatting test",
+            ?_assertEqual(iolist_to_binary([<<"Day Time [error] ">>, pid_to_list(self()), <<" Message\n">>]),
+                iolist_to_binary(format(#lager_log_message{timestamp={"Day","Time"},
+                            message="Message",
+                            severity_as_int=lager_util:level_to_num(error),
+                            metadata=[{pid,self()}]},
+                        [date, " ", time," [",severity,"] ",pid, " ", message, "\n"]
+                    )))
+        },
+        {"Non existant metadata can default to string",
+            ?_assertEqual(iolist_to_binary([<<"Day Time [error] Fallback Message\n">>]),
+                iolist_to_binary(format(#lager_log_message{timestamp={"Day","Time"},
+                            message="Message",
+                            severity_as_int=lager_util:level_to_num(error),
+                            metadata=[]},
+                        [date, " ", time," [",severity,"] ",{does_not_exist,"Fallback"}, " ", message, "\n"]
+                    )))
+        },
+        {"Non existant metadata can default to other metadata",
+            ?_assertEqual(iolist_to_binary([<<"Day Time [error] Fallback Message\n">>]),
+                iolist_to_binary(format(#lager_log_message{timestamp={"Day","Time"},
+                            message="Message",
+                            severity_as_int=lager_util:level_to_num(error),
+                            metadata=[{pid,"Fallback"}]},
+                        [date, " ", time," [",severity,"] ",{does_not_exist,pid}, " ", message, "\n"]
+                    )))
+        }
+    ].
 
 -endif.

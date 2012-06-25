@@ -85,37 +85,37 @@ expand_handlers([H|T]) ->
     [H | expand_handlers(T)].
 
 to_config({Name,Severity}) ->
-	{{lager_file_backend, Name}, {Name, Severity}};
+    {{lager_file_backend, Name}, {Name, Severity}};
 to_config({Name,_Severity,_Size,_Rotation,_Count}=Config) ->
-	{{lager_file_backend, Name}, Config};
+    {{lager_file_backend, Name}, Config};
 to_config({Name,Severity,Size,Rotation,Count,Format}) ->
-	{{lager_file_backend, Name}, {Name,Severity,Size,Rotation,Count},Format}.
+    {{lager_file_backend, Name}, {Name,Severity,Size,Rotation,Count},Format}.
 
 
 
 -ifdef(TEST).
 application_config_mangling_test_() ->
-	[{"Explode the file backend handlers",
-	  ?_assertMatch( 
-	   [{lager_console_backend, info},
-		{{lager_file_backend,"error.log"},{"error.log",error,10485760, "$D0",5}},
-		{{lager_file_backend,"console.log"},{"console.log",info,10485760, "$D0",5}}
-	   ]	  
-	  ,expand_handlers([{lager_console_backend, info},
-		{lager_file_backend, [
-							  {"error.log", error, 10485760, "$D0", 5},
-							  {"console.log", info, 10485760, "$D0", 5}
-							 ]}]
-					  ))}
-	 ,{"Explode with formatter info",
-	   ?_assertMatch(
-	   [{{lager_file_backend,"test.log"},  {"test.log", debug, 10485760, "$D0", 5},{lager_default_formatter,["[",severity,"] ", message, "\n"]}},
-		{{lager_file_backend,"test2.log"}, {"test2.log",debug, 10485760, "$D0", 5},{lager_default_formatter,["2>[",severity,"] ", message, "\n"]}}]
-	   ,expand_handlers([{lager_file_backend, [
-										   {"test.log", debug, 10485760, "$D0", 5,{lager_default_formatter,["[",severity,"] ", message, "\n"]}},
-										   {"test2.log",debug, 10485760, "$D0", 5,{lager_default_formatter,["2>[",severity,"] ",message, "\n"]}}
-											  ]
-					   }])
-	   )
-	  }].
+    [{"Explode the file backend handlers",
+            ?_assertMatch(
+                [{lager_console_backend, info},
+                    {{lager_file_backend,"error.log"},{"error.log",error,10485760, "$D0",5}},
+                    {{lager_file_backend,"console.log"},{"console.log",info,10485760, "$D0",5}}
+                ],
+                expand_handlers([{lager_console_backend, info},
+                        {lager_file_backend, [
+                                {"error.log", error, 10485760, "$D0", 5},
+                                {"console.log", info, 10485760, "$D0", 5}
+                            ]}]
+                ))},
+        {"Explode with formatter info",
+            ?_assertMatch(
+                [{{lager_file_backend,"test.log"},  {"test.log", debug, 10485760, "$D0", 5},{lager_default_formatter,["[",severity,"] ", message, "\n"]}},
+                    {{lager_file_backend,"test2.log"}, {"test2.log",debug, 10485760, "$D0", 5},{lager_default_formatter,["2>[",severity,"] ", message, "\n"]}}],
+                expand_handlers([{lager_file_backend, [
+                                {"test.log", debug, 10485760, "$D0", 5,{lager_default_formatter,["[",severity,"] ", message, "\n"]}},
+                                {"test2.log",debug, 10485760, "$D0", 5,{lager_default_formatter,["2>[",severity,"] ",message, "\n"]}}
+                            ]
+                        }])
+            )
+        }].
 -endif.

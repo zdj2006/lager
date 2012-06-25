@@ -91,14 +91,14 @@ transform_statement({call, Line, {remote, _Line1, {atom, _Line2, lager},
                 [Attrs, Format, Args] ->
                     {concat_lists(Attrs, DefaultAttrs), Format, Args}
             end,
-			{call, Line, {remote, Line, {atom,Line,lager},{atom,Line,dispatch_log}},
-							  [
-							  	{atom,Line,Severity},
-								Traces,
-								Message,
-								Arguments
-							  ]
-			};
+            {call, Line, {remote, Line, {atom,Line,lager},{atom,Line,dispatch_log}},
+                [
+                    {atom,Line,Severity},
+                    Traces,
+                    Message,
+                    Arguments
+                ]
+            };
             false ->
                 Stmt
         end;
