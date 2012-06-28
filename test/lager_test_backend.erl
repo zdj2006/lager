@@ -296,6 +296,7 @@ error_logger_redirect_crash_test_() ->
             },
             TestBody("bad return value",bad_return,"gen_server crash terminated with reason: bad return value: bleh"),
             TestBody("bad return value with string",bad_return_string,"gen_server crash terminated with reason: bad return value: {tuple,{tuple,\"string\"}}"),
+            TestBody("bad return value uncaught throw",throw,"gen_server crash terminated with reason: bad return value: a_ball"),
             TestBody("case clause",case_clause,"gen_server crash terminated with reason: no case clause matching {} in crash:handle_call/3"),
             TestBody("case clause string",case_clause_string,"gen_server crash terminated with reason: no case clause matching \"crash\" in crash:handle_call/3"),
             TestBody("function clause",function_clause,"gen_server crash terminated with reason: no function clause matching crash:function({})"),
@@ -642,7 +643,7 @@ error_logger_redirect_test_() ->
                         Pid ! function_clause,
                         timer:sleep(500),
                         _ = gen_event:which_handlers(error_logger),
-                        {_, _, Msg, Metadata} = pop(),
+                        {_, _, Msg, _Metadata} = pop(),
                         Expected = lists:flatten(io_lib:format("CRASH REPORT Process ~p with 0 neighbours crashed with reason: no function clause matching special_process:foo(bar)",
                                 [Pid])),
                         test_body(Expected, lists:flatten(Msg))
@@ -655,7 +656,7 @@ error_logger_redirect_test_() ->
                         Pid ! {case_clause, wtf},
                         timer:sleep(500),
                         _ = gen_event:which_handlers(error_logger),
-                        {_, _, Msg, Metadata} = pop(),
+                        {_, _, Msg, _Metadata} = pop(),
                         Expected = lists:flatten(io_lib:format("CRASH REPORT Process ~p with 0 neighbours crashed with reason: no case clause matching wtf in special_process:loop/0",
                                 [Pid])),
                         test_body(Expected, lists:flatten(Msg))
@@ -668,7 +669,7 @@ error_logger_redirect_test_() ->
                         Pid ! exit,
                         timer:sleep(500),
                         _ = gen_event:which_handlers(error_logger),
-                        {_, _, Msg, Metadata} = pop(),
+                        {_, _, Msg, _Metadata} = pop(),
                         Expected = lists:flatten(io_lib:format("CRASH REPORT Process ~p with 0 neighbours exited with reason: byebye in special_process:loop/0",
                                 [Pid])),
                         test_body(Expected, lists:flatten(Msg))
@@ -681,7 +682,7 @@ error_logger_redirect_test_() ->
                         Pid ! error,
                         timer:sleep(500),
                         _ = gen_event:which_handlers(error_logger),
-                        {_, _, Msg, Metadata} = pop(),
+                        {_, _, Msg, _Metadata} = pop(),
                         Expected = lists:flatten(io_lib:format("CRASH REPORT Process ~p with 0 neighbours crashed with reason: mybad in special_process:loop/0",
                                 [Pid])),
                         test_body(Expected, lists:flatten(Msg))
