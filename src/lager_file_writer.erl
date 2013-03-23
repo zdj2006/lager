@@ -106,7 +106,7 @@ write(Msg, Timestamp, Sync, #state{file=Name, fd=FD, inode=Inode, size=RotSize,
                 {ok, {_, _, Size}} when RotSize /= 0, Size > RotSize ->
                     lager_util:rotate_logfile(Name, Count),
                     %% go around the loop again, we'll do another rotation check and hit the next clause here
-                    write(Msg, Sync, State);
+                    write(Msg, Timestamp, Sync, State);
                 {ok, {NewFD, NewInode, _}} ->
                     %% update our last check and try again
                     do_write(Msg, Sync, State#state{last_check=Timestamp, fd=NewFD, inode=NewInode});
