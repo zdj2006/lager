@@ -306,33 +306,11 @@ validate_logfile_proplist([Other|_Tail], _Acc) ->
 
 get_loglevel_test() ->
     {ok, Level, _} = handle_call(get_loglevel,
-        #state{name="bar", level=lager_util:config_to_mask(info), fd=0, inode=0}),
+        #state{name="bar", level=lager_util:config_to_mask(info)}),
     ?assertEqual(Level, lager_util:config_to_mask(info)),
     {ok, Level2, _} = handle_call(get_loglevel,
-        #state{name="foo", level=lager_util:config_to_mask(warning), fd=0, inode=0}),
+        #state{name="foo", level=lager_util:config_to_mask(warning)}),
     ?assertEqual(Level2, lager_util:config_to_mask(warning)).
-
-rotation_test() ->
-    SyncLevel = validate_loglevel(?DEFAULT_SYNC_LEVEL),
-    SyncSize = ?DEFAULT_SYNC_SIZE,
-    SyncInterval = ?DEFAULT_SYNC_INTERVAL,
-    CheckInterval = 0, %% hard to test delayed mode
-    {ok, {FD, Inode, _}} = lager_util:open_logfile("test.log", {SyncSize, SyncInterval}),
-    State0 = #state{name="test.log", level=?DEBUG, fd=FD, inode=Inode, sync_on=SyncLevel,
-        sync_size=SyncSize, sync_interval=SyncInterval, check_interval=CheckInterval},
-    ?assertMatch(#state{name="test.log", level=?DEBUG, fd=FD, inode=Inode},
-        write(State0, os:timestamp(), ?DEBUG, "hello world")),
-    file:delete("test.log"),
-    Result = write(State0, os:timestamp(), ?DEBUG, "hello world"),
-    %% assert file has changed
-    ?assert(#state{name="test.log", level=?DEBUG, fd=FD, inode=Inode} =/= Result),
-    ?assertMatch(#state{name="test.log", level=?DEBUG}, Result),
-    file:rename("test.log", "test.log.1"),
-    Result2 = write(Result, os:timestamp(), ?DEBUG, "hello world"),
-    %% assert file has changed
-    ?assert(Result =/= Result2),
-    ?assertMatch(#state{name="test.log", level=?DEBUG}, Result2),
-    ok.
 
 filesystem_test_() ->
     {foreach,
@@ -394,7 +372,7 @@ filesystem_test_() ->
                         {ok, FInfo} = file:read_file_info("test.log"),
                         OldPerms = FInfo#file_info.mode,
                         file:write_file_info("test.log", FInfo#file_info{mode = 0}),
-                        gen_event:add_handler(lager_event, lager_file_backend, [{file, "test.log"},{check_interval, 0}]),
+                        supervisor:start_child(lager_handler_watcher_sup, [lager_event, lager_file_backend, [{file, "test.log"},{check_interval, 0}]]),
                         ?assertEqual(1, lager_test_backend:count()),
                         {_Level, _Time, Message,_Metadata} = lager_test_backend:pop(),
                         ?assertEqual("Failed to open log file test.log with error permission denied", lists:flatten(Message)),
@@ -436,7 +414,10 @@ filesystem_test_() ->
                         gen_event:add_handler(lager_event, lager_file_backend, [{file, "test.log"}, {level, info}, {check_interval, 1000}]),
                         lager:log(error, self(), "Test message1"),
                         lager:log(error, self(), "Test message1"),
-                        whereis(lager_event) ! {rotate, "test.log"},
+                        %% this is kind of a hack
+                        HandlerStates = element(2, proplists:get_value(items, lists:nth(5, element(4, sys:get_status(lager_event))))),
+                        [State] = [S || {_, B, _File, S, _} <- HandlerStates, B == lager_file_backend],
+                        State#state.file_writer ! rotate,
                         lager:log(error, self(), "Test message1"),
                         ?assert(filelib:is_regular("test.log.0"))
                 end

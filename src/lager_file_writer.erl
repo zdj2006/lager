@@ -1,6 +1,10 @@
 -module(lager_file_writer).
 -behaviour(gen_server).
 
+-ifdef(TEST).
+-include_lib("eunit/include/eunit.hrl").
+-endif.
+
 -record(state, {
         file :: string(),
         fd :: file:io_device(),
@@ -132,5 +136,26 @@ do_write(Msg, Sync, #state{fd=FD} = State) ->
             {reply, {write_error, Reason}, State}
     end.
 
+-ifdef(TEST).
+rotation_test() ->
+    SyncSize = 1024*64,
+    SyncInterval = 1000,
+    CheckInterval = 0, %% hard to test delayed mode
+    RotationSize = 1024*1024*10,
+    RotationDate = "",
+    RotationCount = 5,
+    {ok, Pid} = start_link("test.log", SyncSize, SyncInterval, CheckInterval, RotationSize, RotationDate, RotationCount),
+    unlink(Pid),
+    write(Pid, "hello world\r\n"),
+    file:delete("test.log"),
+    ?assert(false == filelib:is_regular("test.log")),
+    write(Pid, "hello world\r\n"),
+    ?assert(filelib:is_regular("test.log")),
+    file:rename("test.log", "test.log.1"),
+    ?assert(false == filelib:is_regular("test.log")),
+    write(Pid, "hello world\r\n"),
+    ?assert(filelib:is_regular("test.log")),
+    exit(Pid, kill),
+    ok.
 
-
+-endif.
