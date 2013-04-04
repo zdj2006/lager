@@ -5,7 +5,7 @@ to provide a more traditional way to perform logging in an erlang application
 that plays nicely with traditional UNIX logging tools like logrotate and
 syslog.
 
-  [http://travis-ci.org/basho/lager](Travis-CI) :: ![Travis-CI](https://secure.travis-ci.org/basho/lager.png)
+  [Travis-CI](http://travis-ci.org/basho/lager) :: ![Travis-CI](https://secure.travis-ci.org/basho/lager.png)
 
 Features
 --------
@@ -20,6 +20,7 @@ Features
 * Support for pretty printing records encountered at compile time
 * Tolerant in the face of large or many log messages, won't out of memory the node
 * Supports internal time and date based rotation, as well as external rotation tools
+* Syslog style log level comparison flags
 
 Usage
 -----
@@ -28,14 +29,14 @@ some other way of including it in erlang's path. You can then add the
 following option to the erlang compiler flags
 
 ```erlang
-  {parse_transform, lager_transform}
+{parse_transform, lager_transform}
 ```
 
 Alternately, you can add it to the module you wish to compile with logging
 enabled:
 
 ```erlang
-  -compile([{parse_transform, lager_transform}]).
+-compile([{parse_transform, lager_transform}]).
 ```
 
 Before logging any messages, you'll need to start the lager application. The
@@ -43,7 +44,7 @@ lager module's start function takes care of loading and starting any dependencie
 lager requires.
 
 ```erlang
-  lager:start().
+lager:start().
 ```
 
 You can also start lager on startup with a switch to `erl`:
@@ -56,13 +57,13 @@ Once you have built your code with lager and started the lager application,
 you can then generate log messages by doing the following:
 
 ```erlang
-  lager:error("Some message")
+lager:error("Some message")
 ```
 
   Or:
 
 ```erlang
-  lager:warning("Some message with a term: ~p", [Term])
+lager:warning("Some message with a term: ~p", [Term])
 ```
 
 The general form is lager:Severity() where Severity is one of the log levels
@@ -74,14 +75,14 @@ To configure lager's backends, you use an application variable (probably in
 your app.config):
 
 ```erlang
-  {lager, [
-    {handlers, [
-      {lager_console_backend, info},
-      {lager_file_backend, [{file, "error.log"}, {level, error}]},
-      {lager_file_backend, [{file, "console.log"}, {level, info}]}
-      ]}
+{lager, [
+  {handlers, [
+    {lager_console_backend, info},
+    {lager_file_backend, [{file, "error.log"}, {level, error}]},
+    {lager_file_backend, [{file, "console.log"}, {level, info}]}
     ]}
-  ]}.
+  ]}
+]}.
 ```
 
 The available configuration options for each backend are listed in their
@@ -94,15 +95,15 @@ exports format(#lager_log_message{},Config#any()).  It is specified as part of t
 for the backend:
 
 ```erlang
-  {lager, [
-    {handlers, [
-      {lager_console_backend, [info, {lager_default_formatter, [time," [",severity,"] ", message, "\n"]}},
-      {lager_file_backend, [{name, "error.log"}, {level, error}, {size, 10485760}, {date, "$D0"}, {count, 5},{formatter, lager_default_formatter},
-        {formatter_config[date, " ", time," [",severity,"] ",pid, " ", message, "\n"]}]},
-      {lager_file_backend, [{name, "console.log"}, {level, info}, {size, 10485760}, {date, "$D0"}, {count, 5},{formatter, lager_default_formatter}]}
-      ]}
+{lager, [
+  {handlers, [
+    {lager_console_backend, [info, {lager_default_formatter, [time," [",severity,"] ", message, "\n"]}},
+    {lager_file_backend, [{name, "error.log"}, {level, error}, {size, 10485760}, {date, "$D0"}, {count, 5},{formatter, lager_default_formatter},
+      {formatter_config[date, " ", time," [",severity,"] ",pid, " ", message, "\n"]}]},
+    {lager_file_backend, [{name, "console.log"}, {level, info}, {size, 10485760}, {date, "$D0"}, {count, 5},{formatter, lager_default_formatter}]}
     ]}
-  ]}.
+  ]}
+]}.
 ```
 
 Included is lager_default_formatter.  This provides a generic, default formatting for log messages using a "semi-iolist"
@@ -112,10 +113,10 @@ The metadata properties date,time, message, and severity will always exist.
 The properties pid, file, line, module, function, and node will always exist if the parser transform is used.
 
 ```
-    ["Foo"] -> "Foo", regardless of message content.
-    [message] -> The content of the logged message, alone.
-    [{pid,"Unknown Pid"}] -> "<?.?.?>" if pid is in the metadata, "Unknown Pid" if not.
-    [{pid, ["My pid is ", pid], "Unknown Pid"}] -> if pid is in the metadata print "My pid is <?.?.?>", otherwise print "Unknown Pid"
+["Foo"] -> "Foo", regardless of message content.
+[message] -> The content of the logged message, alone.
+[{pid,"Unknown Pid"}] -> "<?.?.?>" if pid is in the metadata, "Unknown Pid" if not.
+[{pid, ["My pid is ", pid], "Unknown Pid"}] -> if pid is in the metadata print "My pid is <?.?.?>", otherwise print "Unknown Pid"
 ```
 
 Optionally, a tuple of {atom(),semi-iolist()}
@@ -123,8 +124,8 @@ can be used.  The atom will look up the property, but if not found it will use t
 can be nested or refer to other properties.
 
 ```
-    [{pid,"Unknown Pid"}] -> "<?.?.?>" if pid is in the metadata, "Unknown Pid" if not.
-    [{server,[$(,{pid,"Unknown Server"},$)]}}] -> user provided server metadata, otherwise "(<?.?.?>)", otherwise "(Unknown Server)"
+[{pid,"Unknown Pid"}] -> "<?.?.?>" if pid is in the metadata, "Unknown Pid" if not.
+[{server,[$(,{pid,"Unknown Server"},$)]}}] -> user provided server metadata, otherwise "(<?.?.?>)", otherwise "(Unknown Server)"
 ```
 
 Error logger integration
@@ -148,13 +149,13 @@ You can change the log level of any lager backend at runtime by doing the
 following:
 
 ```erlang
-  lager:set_loglevel(lager_console_backend, debug).
+lager:set_loglevel(lager_console_backend, debug).
 ```
 
   Or, for the backend with multiple handles (files, mainly):
 
 ```erlang
-  lager:set_loglevel(lager_file_backend, "console.log", debug).
+lager:set_loglevel(lager_file_backend, "console.log", debug).
 ```
 
 Lager keeps track of the minium log level being used by any backend and
@@ -163,6 +164,22 @@ log messages, when no backend is consuming debug messages, are effectively
 free. A simple benchmark of doing 1 million debug log messages while the
 minimum threshold was above that takes less than half a second.
 
+Syslog style loglevel comparison flags
+--------------------------------------
+In addition to the regular log level names, you can also do finer grained masking
+of what you want to log:
+
+```
+info - info and higher (>= is implicit)
+=debug - only the debug level
+!=info - everything but the info level
+<=notice - notice and below
+<warning - anything less than warning
+```
+
+These can be used anywhere a loglevel is supplied, although they need to be either
+a quoted atom or a string.
+
 Internal log rotation
 ---------------------
 Lager can rotate its own logs or have it done via an external process. To
@@ -170,7 +187,7 @@ use internal rotation, use the 'size', 'date' and 'count' values in the file
 backend's config:
 
 ```erlang
-  [{name, "error.log"}, {level, error}, {size, 10485760}, {date, "$D0"}, {count, 5}]
+[{name, "error.log"}, {level, error}, {size, 10485760}, {date, "$D0"}, {count, 5}]
 ```
 
 This tells lager to log error and above messages to "error.log" and to
@@ -184,29 +201,29 @@ The "$D0" syntax is taken from the syntax newsyslog uses in newsyslog.conf.
 The relevant extract follows:
 
 ```
-  Day, week and month time format: The lead-in character
-  for day, week and month specification is a `$'-sign.
-  The particular format of day, week and month
-  specification is: [Dhh], [Ww[Dhh]] and [Mdd[Dhh]],
-  respectively.  Optional time fields default to
-  midnight.  The ranges for day and hour specifications
-  are:
+Day, week and month time format: The lead-in character
+for day, week and month specification is a `$'-sign.
+The particular format of day, week and month
+specification is: [Dhh], [Ww[Dhh]] and [Mdd[Dhh]],
+respectively.  Optional time fields default to
+midnight.  The ranges for day and hour specifications
+are:
 
-    hh      hours, range 0 ... 23
-    w       day of week, range 0 ... 6, 0 = Sunday
-    dd      day of month, range 1 ... 31, or the
-            letter L or l to specify the last day of
-            the month.
+  hh      hours, range 0 ... 23
+  w       day of week, range 0 ... 6, 0 = Sunday
+  dd      day of month, range 1 ... 31, or the
+          letter L or l to specify the last day of
+          the month.
 
-  Some examples:
-    $D0     rotate every night at midnight
-    $D23    rotate every day at 23:00 hr
-    $W0D23  rotate every week on Sunday at 23:00 hr
-    $W5D16  rotate every week on Friday at 16:00 hr
-    $M1D0   rotate on the first day of every month at
-            midnight (i.e., the start of the day)
-    $M5D6   rotate on every 5th day of the month at
-            6:00 hr
+Some examples:
+  $D0     rotate every night at midnight
+  $D23    rotate every day at 23:00 hr
+  $W0D23  rotate every week on Sunday at 23:00 hr
+  $W5D16  rotate every week on Friday at 16:00 hr
+  $M1D0   rotate on the first day of every month at
+          midnight (i.e., the start of the day)
+  $M5D6   rotate on every 5th day of the month at
+          6:00 hr
 ```
 
 To configure the crash log rotation, the following application variables are
@@ -220,30 +237,29 @@ See the .app.src file for further details.
 Syslog Support
 --------------
 Lager syslog output is provided as a separate application;
-[[https://github.com/basho/lager_syslog][lager_syslog]]. It is packaged as a
+[lager_syslog](https://github.com/basho/lager_syslog). It is packaged as a
 separate application so Lager itself doesn't have an indirect dependancy on a
 port driver. Please see the lager_syslog README for configuration information.
 
-AMQP Support
-------------
-Jon Brisbin has written a lager backend to send lager messages into AMQP, so
-you can aggregate logs from a cluster into a central point. You can find it
-under the [[https://github.com/jbrisbin/lager_amqp_backend][lager_amqp_backend]]
-project on github.
-
-Loggly Support
+Older Backends
 --------------
-The team at [[https://www.kivra.com][KIVRA]] has written a lager backend to send
-lager messages into [[http://www.loggly.com][Loggly]]. You can find it
-under the [[https://github.com/kivra/lager_loggly][lager_loggly]]
-project on github.
+Lager 2.0 changed the backend API, there are various 3rd party backends for
+lager available, but they may not have been updated to the new API. As they
+are updated, links to them can be re-added here.
 
-SMTP Support
-------------
-Ivan Blinkov has written a lager backend to send lager messages to email via SMTP,
-so you can get informed about critical errors in production immediately. You can
-find it under the [[https://github.com/blinkov/lager_smtp][lager_smtp]] project
-on github.
+Record Pretty Printing
+----------------------
+Lager's parse transform will keep track of any record definitions it encounters
+and store them in the module's attributes. You can then, at runtime, print any
+record a module compiled with the lager parse transform knows about by using the
+lager:pr/2 function, which takes the record and the module that knows about the record:
+
+```erlang
+lager:info("My state is ~p", [lager:pr(State, ?MODULE)])
+```
+
+Often, ?MODULE is sufficent, but you can obviously substitute that for a literal module name.
+lager:pr also works from the shell.
 
 Tracing
 -------
@@ -252,14 +268,23 @@ attributes. Lager automatically captures the pid, module, function and line at t
 log message callsite. However, you can add any additional attributes you wish:
 
 ```erlang
-  lager:warning([{request, RequestID},{vhost, Vhost}], "Permission denied to ~s", [User])
+lager:warning([{request, RequestID},{vhost, Vhost}], "Permission denied to ~s", [User])
 ```
+
+Note that lager:md will *only* accept a list of key/value pairs keyed by atoms.
 
 Then, in addition to the default trace attributes, you'll be able to trace
 based on request or vhost:
 
 ```erlang
-  lager:trace_file("logs/example.com.error", [{vhost, "example.com"}], error)
+lager:trace_file("logs/example.com.error", [{vhost, "example.com"}], error)
+```
+
+To persist metadata for the life of a process, you can use lager:md/1 to store metadata
+in the process dictionary:
+
+```erlang
+lager:md([{zone, forbidden}])
 ```
 
 You can also omit the final argument, and the loglevel will default to
@@ -268,7 +293,7 @@ You can also omit the final argument, and the loglevel will default to
 Tracing to the console is similar:
 
 ```erlang
-  lager:trace_console([{request, 117}])
+lager:trace_console([{request, 117}])
 ```
 
 In the above example, the loglevel is omitted, but it can be specified as the
@@ -282,7 +307,7 @@ Tracing to an existing logfile is also supported, if you wanted to log
 warnings from a particular module to the default error.log:
 
 ```erlang
-  lager:trace_file("log/error.log", [{module, mymodule}], warning)
+lager:trace_file("log/error.log", [{module, mymodule}], warning)
 ```
 
 To view the active log backends and traces, you can use the lager:status()
@@ -292,16 +317,16 @@ To delete a specific trace, store a handle for the trace when you create it,
 that you later pass to lager:stop_trace/1:
 
 ```erlang
-  {ok, Trace} = lager:trace_file("log/error.log", [{module, mymodule}]),
-  ...
-  lager:stop_trace(Trace)
+{ok, Trace} = lager:trace_file("log/error.log", [{module, mymodule}]),
+...
+lager:stop_trace(Trace)
 ```
 
 Tracing to a pid is somewhat of a special case, since a pid is not a
 data-type that serializes well. To trace by pid, use the pid as a string:
 
 ```erlang
-  lager:trace_console([{pid, "<0.410.0>"}])
+lager:trace_console([{pid, "<0.410.0>"}])
 ```
 
 Setting the truncation limit at compile-time
@@ -311,11 +336,11 @@ using the {lager_truncation_size, X} option. In rebar, you can add it to
 erl_opts:
 
 ```erlang
-  {erl_opts, [{parse_transform, lager_transform}, {lager_truncation_size, 1024}]}.
+{erl_opts, [{parse_transform, lager_transform}, {lager_truncation_size, 1024}]}.
 ```
 
 You can also pass it to erlc, if you prefer:
 
 ```
-  erlc -pa lager/ebin +'{parse_transform, lager_transform}' +'{lager_truncation_size, 1024}' file.erl
+erlc -pa lager/ebin +'{parse_transform, lager_transform}' +'{lager_truncation_size, 1024}' file.erl
 ```
