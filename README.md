@@ -21,6 +21,7 @@ Features
 * Tolerant in the face of large or many log messages, won't out of memory the node
 * Supports internal time and date based rotation, as well as external rotation tools
 * Syslog style log level comparison flags
+* Colored terminal output (requires R16+)
 
 Usage
 -----
@@ -98,9 +99,9 @@ for the backend:
 {lager, [
   {handlers, [
     {lager_console_backend, [info, {lager_default_formatter, [time," [",severity,"] ", message, "\n"]}},
-    {lager_file_backend, [{name, "error.log"}, {level, error}, {size, 10485760}, {date, "$D0"}, {count, 5},{formatter, lager_default_formatter},
-      {formatter_config[date, " ", time," [",severity,"] ",pid, " ", message, "\n"]}]},
-    {lager_file_backend, [{name, "console.log"}, {level, info}, {size, 10485760}, {date, "$D0"}, {count, 5},{formatter, lager_default_formatter}]}
+    {lager_file_backend, [{name, "error.log"}, {level, error}, {formatter, lager_default_formatter},
+      {formatter_config, [date, " ", time," [",severity,"] ",pid, " ", message, "\n"]}]},
+    {lager_file_backend, [{name, "console.log"}, {level, info}]}
     ]}
   ]}
 ]}.
@@ -261,6 +262,18 @@ lager:info("My state is ~p", [lager:pr(State, ?MODULE)])
 Often, ?MODULE is sufficent, but you can obviously substitute that for a literal module name.
 lager:pr also works from the shell.
 
+Colored terminal output
+-----------------------
+If you have erlang R16 or higher, you can tell lager's console backend to be colored. Simply
+add
+
+```erlang
+{colored, true}
+```
+
+To lager's application environment config. If you don't like the default colors, they are]
+also configurable, see the app.src file for more details.
+
 Tracing
 -------
 Lager supports basic support for redirecting log messages based on log message
@@ -270,8 +283,6 @@ log message callsite. However, you can add any additional attributes you wish:
 ```erlang
 lager:warning([{request, RequestID},{vhost, Vhost}], "Permission denied to ~s", [User])
 ```
-
-Note that lager:md will *only* accept a list of key/value pairs keyed by atoms.
 
 Then, in addition to the default trace attributes, you'll be able to trace
 based on request or vhost:
@@ -286,6 +297,8 @@ in the process dictionary:
 ```erlang
 lager:md([{zone, forbidden}])
 ```
+
+Note that lager:md will *only* accept a list of key/value pairs keyed by atoms.
 
 You can also omit the final argument, and the loglevel will default to
 'debug'.
