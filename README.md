@@ -144,6 +144,34 @@ application variable. If undefined it is not written at all.
 Messages in the crash log are subject to a maximum message size which can be
 specified via the crash_log_msg_size application variable.
 
+Overload Protection
+-------------------
+
+Prior to lager 2.0, the gen_event at the core of lager operated purely in
+synchronous mode. Asynchronous mode is faster, but has no protection against
+message queue overload. In lager 2.0, the gen_event takes a hybrid approach. it
+polls its own mailbox size and toggles the messaging between synchronous and
+asynchronous depending on mailbox size.
+
+```erlang
+{async_threshold, 100}
+```
+
+This will use async messaging until the mailbox exceeds 100 messages, at which
+point synchronous messaging will be used.
+
+If you wish to disable this behaviour, simply set it to 'undefined'.
+
+If you want to limit the number of messages per second allowed from error_logger,
+which is a good idea if you want to weather a flood of messages when lots of
+related processes crash, you can set a limit:
+
+```erlang
+{error_logger_hwm, 50}
+```
+
+It is probably best to keep this number small.
+
 Runtime loglevel changes
 ------------------------
 You can change the log level of any lager backend at runtime by doing the
@@ -341,6 +369,20 @@ data-type that serializes well. To trace by pid, use the pid as a string:
 ```erlang
 lager:trace_console([{pid, "<0.410.0>"}])
 ```
+
+As of lager 2.0, you can also use a 3 tuple while tracing, where the second
+element is a comparison operator. The currently supported comparison operators
+are:
+
+* '<' - less than
+* '=' - equal to
+* '>' - greater than
+
+```erlang
+lager:trace_console([{request, '>' 117}, {request, '<' 120}])
+```
+
+Using '=' is equivalent to the 2-tuple form.
 
 Setting the truncation limit at compile-time
 --------------------------------------------
