@@ -31,7 +31,7 @@
         get_loglevel/1, set_loglevel/2, set_loglevel/3, get_loglevels/0,
         update_loglevel_config/0, posix_error/1,
         safe_format/3, safe_format_chop/3, dispatch_log/5, dispatch_log/9, 
-        do_log/9, pr/2]).
+        do_log/9, pr/2, print_record/2, print_state/2]).
 
 -type log_level() :: debug | info | notice | warning | error | critical | alert | emergency.
 -type log_level_number() :: 0..7.
@@ -376,6 +376,12 @@ pr(Record, Module) when is_tuple(Record), is_atom(element(1, Record)) ->
     end;
 pr(Record, _) ->
     Record.
+
+print_record(Record, Module) ->
+    io:format(lager_trunc_io:print(lager:pr(Record, Module), 1000, [{wrap_records, true}])).
+
+print_state(Pid, Module) ->
+    io:format("State for ~p is:~n~s~n", [Pid, element(1, lager_trunc_io:print(lager:pr(sys:get_state(Pid), Module), 1000, [{wrap_records, true}]))]).
 
 zip([FieldName|RecordFields], [FieldValue|Record], Module, ToReturn) ->
     case   is_tuple(FieldValue) andalso

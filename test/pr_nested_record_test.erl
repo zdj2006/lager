@@ -3,7 +3,7 @@
 -compile([{parse_transform, lager_transform}]).
 
 -record(a, {field1, field2}).
--record(b, {field1, field2}).
+-record(b, {field1, field2, field3}).
 
 
 -ifdef(TEST).
@@ -12,10 +12,11 @@
 
 nested_record_test() ->
     A = #a{field1 = x, field2 = y}, 
-    B = #b{field1 = A, field2 = {}},
+    B = #b{field1 = A, field2 = {}, field3 = {a, b, c, d, e}},
     Pr_B = lager:pr(B, ?MODULE),
     ?assertEqual({'$lager_record', b,
                     [{field1, {'$lager_record', a,
                                     [{field1, x},{field2, y}]}},
-                     {field2, {}}]}, 
+                     {field2, {}},
+                     {field3, {a, b, c, d, e}}]},
                    Pr_B).

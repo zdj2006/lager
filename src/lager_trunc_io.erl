@@ -53,7 +53,9 @@
         lists_as_strings = true :: boolean(),
         %% force strings, or binaries to be printed as a string,
         %% even if they're not printable
-        force_strings = false :: boolean()
+        force_strings = false :: boolean(),
+        %% put newlines in when printing records?
+        wrap_records = false :: boolean()
     }).
 
 format(Fmt, Args, Max) ->
@@ -261,8 +263,9 @@ print(Port, _Max, _Options) when is_port(Port) ->
     {L, length(L)};
 
 print({'$lager_record', Name, Fields}, Max, Options) ->
-    Leader = "#" ++ atom_to_list(Name) ++ "{",
-    {RC, Len} = record_fields(Fields, Max - length(Leader) + 1, dec_depth(Options)),
+    NameStr = atom_to_list(Name),
+    Leader = "#" ++ NameStr ++ "{",
+    {RC, Len} = record_fields(NameStr, Fields, Max - length(Leader) + 1, dec_depth(Options)),
     {[Leader, RC, "}"], Len + length(Leader) + 1};
 
 print(Tuple, Max, Options) when is_tuple(Tuple) -> 
@@ -435,7 +438,9 @@ prepare_options([{depth, Depth}|T], Options) when is_integer(Depth) ->
 prepare_options([{lists_as_strings, Bool}|T], Options) when is_boolean(Bool) ->
     prepare_options(T, Options#print_options{lists_as_strings = Bool});
 prepare_options([{force_strings, Bool}|T], Options) when is_boolean(Bool) ->
-    prepare_options(T, Options#print_options{force_strings = Bool}).
+    prepare_options(T, Options#print_options{force_strings = Bool});
+prepare_options([{wrap_records, Bool}|T], Options) when is_boolean(Bool) ->
+    prepare_options(T, Options#print_options{wrap_records = Bool}).
 
 dec_depth(#print_options{depth=Depth} = Options) when Depth > 0 ->
     Options#print_options{depth=Depth-1};
@@ -450,20 +455,23 @@ escape($\f) -> "\\f";
 escape($\b) -> "\\b";
 escape($\v) -> "\\v".
 
-record_fields([], _, _) ->
+record_fields(_, [], _, _) ->
     {"", 0};
-record_fields(_, Max, #print_options{depth=D}) when Max < 4; D == 0 ->
+record_fields(_, _, Max, #print_options{depth=D}) when Max < 4; D == 0 ->
     {"...", 3};
-record_fields([{Field, Value}|T], Max, Options) ->
+record_fields(Name, [{Field, Value}|T], Max, Options) ->
+    Wrap = Options#print_options.wrap_records,
     {ExtraChars, Terminator} = case T of
         [] ->
             {1, []};
+        _ when Wrap ->
+            {2, ",\n" ++ string:copies(" ", length(Name)+2)};
         _ ->
             {2, ","}
     end,
     {FieldStr, FieldLen} = print(Field, Max - ExtraChars, Options),
     {ValueStr, ValueLen} = print(Value, Max - (FieldLen + ExtraChars), Options),
-    {Final, FLen} = record_fields(T, Max - (FieldLen + ValueLen + ExtraChars), dec_depth(Options)),
+    {Final, FLen} = record_fields(Name, T, Max - (FieldLen + ValueLen + ExtraChars), dec_depth(Options)),
     {[FieldStr++"="++ValueStr++Terminator|Final], FLen + FieldLen + ValueLen + ExtraChars}.
 
 
