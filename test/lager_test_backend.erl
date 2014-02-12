@@ -1192,6 +1192,7 @@ async_threshold_test_() ->
                         _ = gen_event:which_handlers(lager_event),
                         %% just in case...
                         timer:sleep(1000),
+                        lager:info("hello world"),
                         _ = gen_event:which_handlers(lager_event),
 
                         %% async is true again now that the mailbox has drained
