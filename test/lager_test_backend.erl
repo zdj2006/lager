@@ -1191,7 +1191,7 @@ async_threshold_test_() ->
                         %% serialize ont  the mailbox again
                         _ = gen_event:which_handlers(lager_event),
                         %% just in case...
-                        timer:sleep(100),
+                        timer:sleep(1000),
 
                         %% async is true again now that the mailbox has drained
                         ?assertEqual(true, lager_config:get(async)),
