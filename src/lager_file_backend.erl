@@ -608,7 +608,7 @@ filesystem_test_() ->
                         ?assertEqual({ok, <<>>}, file:read_file("test.log")),
                         lager:log(info, self(), "Test message1"),
                         ?assertEqual({ok, <<>>}, file:read_file("test.log")),
-                        timer:sleep(1000),
+                        timer:sleep(2000),
                         {ok, Bin} = file:read_file("test.log"),
                         ?assert(<<>> /= Bin)
                 end

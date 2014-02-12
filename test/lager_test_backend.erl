@@ -1161,7 +1161,8 @@ async_threshold_test_() ->
                 error_logger:tty(false),
                 application:load(lager),
                 application:set_env(lager, error_logger_redirect, false),
-                application:set_env(lager, async_threshold, 10),
+                application:set_env(lager, async_threshold, 2),
+                application:set_env(lager, async_threshold_window, 1),
                 application:set_env(lager, handlers, [{?MODULE, info}]),
                 lager:start()
         end,
