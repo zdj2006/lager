@@ -511,7 +511,7 @@ lager_test_() ->
             {"record printing fails gracefully when module is invalid",
                 fun() ->
                         spawn(fun() -> lager:info("State ~p", [lager:pr({state, 1}, not_a_module)]) end),
-                        timer:sleep(100),
+                        timer:sleep(1000),
                         {Level, _Time, Message, _Metadata}  = pop(),
                         ?assertMatch(Level, lager_util:level_to_num(info)),
                         ?assertEqual("State {state,1}", lists:flatten(Message)),
