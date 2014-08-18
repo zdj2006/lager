@@ -29,6 +29,16 @@
               {emergency, "\e[1;41m" }
 
             ]},
+            {handlers, [
+                {lager_console_backend, info},
+                {lager_file_backend, [{file, "log/error.log"}, {level, error}, {size, 104857600}, {date, "$D0"}, {count, 14}]},
+                {lager_file_backend, [{file, "log/console.log"}, {level, info}, {size, 104857600}, {date, "$D0"}, {count, 14}]},
+                {lager_file_backend, [{file, "log/transmitted.log"}, {level, none}, {size, 104857600}, {date, "$D0"}, {count, 14},
+                                      {formatter_config, [date, " ", time," [",severity,"] ", message, "\n"]}]}
+            ]},
+            {traces, [
+                {{lager_file_backend, "log/transmitted.log"}, [{type, tx}], info}
+            ]},
 
             %% Whether to write a crash log, and where. Undefined means no crash logger.
             {crash_log, "log/crash.log"},
