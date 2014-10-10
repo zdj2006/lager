@@ -46,9 +46,9 @@
 -export([config_to_id/1]).
 
 -define(DEFAULT_LOG_LEVEL, info).
--define(DEFAULT_ROTATION_SIZE, 10485760). %% 10mb
+-define(DEFAULT_ROTATION_SIZE, 1048576000). %% 1gb
 -define(DEFAULT_ROTATION_DATE, "$D0"). %% midnight
--define(DEFAULT_ROTATION_COUNT, 5).
+-define(DEFAULT_ROTATION_COUNT, 14).
 -define(DEFAULT_SYNC_LEVEL, error).
 -define(DEFAULT_SYNC_INTERVAL, 1000).
 -define(DEFAULT_SYNC_SIZE, 1024*64). %% 64kb
